@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant User
+    participant Assistant
+    participant Speech
+    participant System
+    participant Spotify
+    participant Windows
+    participant AI
+
+    User->>Assistant: Wake Word ("Hey Computer")
+    Assistant->>Speech: Activate Listening
+    Speech-->>Assistant: Wake Word Detected
+    Assistant->>User: Acknowledgment
+
+    User->>Assistant: "Play some music"
+    Assistant->>Speech: Process Command
+    Speech-->>Assistant: Command Text
+    Assistant->>System: Route Command
+    System->>Spotify: Handle Music Command
+
+    Spotify->>Windows: Find Spotify Window
+    Windows-->>Spotify: Window Handle
+    Spotify->>Windows: Focus Window
+    Spotify->>Spotify: Execute Command
+    Spotify-->>System: Command Result
+    System-->>Assistant: Operation Status
+
+    Assistant->>AI: Generate Response
+    AI-->>Assistant: Natural Response
+    Assistant->>User: Voice Feedback
+
+    Note over User, AI: Command processing includes error handling and retries

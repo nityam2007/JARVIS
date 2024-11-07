@@ -1,0 +1,23 @@
+graph TD
+    A[Main Assistant] --> B[Speech Recognition]
+    A --> C[Audio Manager]
+    A --> D[System Controller]
+    A --> E[Memory Manager]
+    A --> F[AI Module]
+    
+    D --> G[Spotify Controller]
+    
+    G --> H[Window Manager]
+    G --> I[Playback Control]
+    G --> J[Search & Navigation]
+    
+    B --> L[Wake Word Detection]
+    C --> M[Text to Speech]
+    E --> N[History Storage]
+    F --> O[Response Generation]
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style G fill:#bbf,stroke:#333,stroke-width:2px
+    style B,C,D,E,F fill:#dfd,stroke:#333
+    style H,I,J fill:#cef,stroke:#333
+    style L,M,N,O fill:#ffe,stroke:#333

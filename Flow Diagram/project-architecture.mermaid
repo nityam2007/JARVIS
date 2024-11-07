@@ -1,0 +1,34 @@
+graph TD
+    subgraph Voice Assistant System
+        A[Voice Assistant Core] --> B[Speech Recognition]
+        A --> C[Audio Manager]
+        A --> D[System Controller]
+        A --> E[Memory Manager]
+        A --> F[AI Integration]
+        
+        D --> G[Spotify Controller]
+        
+        subgraph Spotify Control
+            G --> H[Window Management]
+            G --> I[Playback Control]
+            G --> J[Search & Navigation]
+            G --> K[Volume Control]
+        end
+        
+        subgraph Core Features
+            B --> L[Wake Word Detection]
+            B --> M[Command Recognition]
+            C --> N[Text-to-Speech]
+            C --> O[Audio Output]
+            D --> P[App Control]
+            D --> Q[System Commands]
+            E --> R[Conversation History]
+            F --> S[AI Response Generation]
+        end
+    end
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style G fill:#bbf,stroke:#333,stroke-width:2px
+    style B,C,D,E,F fill:#dfd,stroke:#333
+    style H,I,J,K fill:#cef,stroke:#333
+    style L,M,N,O,P,Q,R,S fill:#ffe,stroke:#333

@@ -1,0 +1,21 @@
+flowchart TD
+    Assistant[Assistant Core] --> Audio[Audio Manager]
+    Assistant --> Speech[Speech Recognition]
+    Assistant --> System[System Controller]
+    Assistant --> Memory[Memory Manager]
+    Assistant --> AI[AI Module]
+    
+    System --> Spotify[Spotify Controller]
+    
+    Audio --> TTS[Text to Speech]
+    Audio --> Queue[Speech Queue]
+    
+    Speech --> WakeWord[Wake Word Detection]
+    Speech --> Command[Command Recognition]
+    
+    Memory --> History[Conversation History]
+    Memory --> State[State Management]
+    
+    Spotify --> Window[Window Manager]
+    Spotify --> Playback[Playback Control]
+    Spotify --> Search[Search Navigation]

@@ -1,0 +1,25 @@
+flowchart TD
+    Start[User Voice Input] --> WakeWord[Wake Word Detection]
+    WakeWord --> WakeCheck{Wake Word?}
+    WakeCheck -->|No| WakeWord
+    WakeCheck -->|Yes| Recognition[Speech Recognition]
+    Recognition --> Processing[Command Processing]
+    
+    Processing --> CommandType{Command Type}
+    CommandType -->|System| SystemCtrl[System Control]
+    CommandType -->|Media| MediaCtrl[Media Control]
+    CommandType -->|Voice| VoiceCtrl[Voice Control]
+    CommandType -->|Other| AI[AI Processing]
+    
+    SystemCtrl --> SystemExec[Execute System Command]
+    MediaCtrl --> MediaExec[Execute Media Command]
+    VoiceCtrl --> VoiceExec[Voice Control Action]
+    AI --> AIExec[Generate AI Response]
+    
+    SystemExec --> Response[Response Generation]
+    MediaExec --> Response
+    VoiceExec --> Response
+    AIExec --> Response
+    
+    Response --> TTS[Text to Speech]
+    TTS --> Output[Audio Output]
