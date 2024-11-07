@@ -1,0 +1,354 @@
+import os
+import speech_recognition as sr
+from gtts import gTTS
+import playsound
+import pygame
+import tempfile
+import subprocess
+import threading
+from queue import Queue
+from datetime import datetime
+import json
+import webbrowser
+from dotenv import load_dotenv
+from groq import Groq
+import sys
+import atexit
+import time
+import uuid
+import warnings
+warnings.filterwarnings("ignore")
+
+# Load environment variables and initialize Groq client
+load_dotenv()
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+class AudioEngine:
+    def __init__(self):
+        pygame.mixer.init()
+        self.speech_queue = Queue()
+        self.is_speaking = False
+        self.should_stop = False
+        self.speech_thread = None
+        self.temp_dir = tempfile.mkdtemp()
+        self.current_audio = None
+        self.start_speech_thread()
+
+    def start_speech_thread(self):
+        """Start the speech processing thread"""
+        self.speech_thread = threading.Thread(target=self._process_speech_queue, daemon=True)
+        self.speech_thread.start()
+
+    def _process_speech_queue(self):
+        """Process speech queue in background"""
+        while not self.should_stop:
+            try:
+                if not self.speech_queue.empty():
+                    text = self.speech_queue.get()
+                    if text:
+                        self.is_speaking = True
+                        self._speak_text(text)
+                        self.is_speaking = False
+                    self.speech_queue.task_done()
+                else:
+                    time.sleep(0.1)
+            except Exception as e:
+                print(f"Speech queue error: {e}")
+                self.is_speaking = False
+                time.sleep(0.1)
+
+    def _speak_text(self, text):
+        """Convert text to speech and play it"""
+        try:
+            # Generate unique filename
+            temp_file = os.path.join(self.temp_dir, f'speech_{uuid.uuid4()}.mp3')
+            
+            # Create gTTS object with Indian English accent
+            tts = gTTS(text=text, lang='en', tld='co.in')
+            tts.save(temp_file)
+            
+            # Play audio
+            if not self.should_stop:
+                pygame.mixer.music.load(temp_file)
+                pygame.mixer.music.play()
+                while pygame.mixer.music.get_busy() and not self.should_stop:
+                    pygame.time.Clock().tick(10)
+            
+            # Cleanup temp file
+            try:
+                os.remove(temp_file)
+            except:
+                pass
+                
+        except Exception as e:
+            print(f"Speech error: {e}")
+
+    def speak(self, text):
+        """Add text to speech queue"""
+        if text:
+            self.speech_queue.put(text)
+
+    def stop(self):
+        """Stop speech and clear queue"""
+        try:
+            self.should_stop = True
+            pygame.mixer.music.stop()
+            self.speech_queue.queue.clear()
+            if self.speech_thread and self.speech_thread.is_alive():
+                self.speech_thread.join(timeout=1)
+            pygame.mixer.quit()
+        except Exception as e:
+            print(f"Error stopping audio engine: {e}")
+
+class VoiceAssistant:
+    def __init__(self):
+        self.audio_engine = AudioEngine()
+        self.recognizer = sr.Recognizer()
+        self.is_listening = True
+        self.app_processes = {}
+        self.commands = self.load_commands()
+        
+        # Customize speech recognition for better accuracy
+        self.recognizer.energy_threshold = 4000
+        self.recognizer.dynamic_energy_threshold = True
+        self.recognizer.dynamic_energy_adjustment_damping = 0.15
+        self.recognizer.dynamic_energy_adjustment_ratio = 1.5
+        self.recognizer.pause_threshold = 0.8
+        self.recognizer.operation_timeout = None
+        self.recognizer.phrase_threshold = 0.3
+        self.recognizer.non_speaking_duration = 0.5
+        
+        # Register cleanup
+        atexit.register(self.cleanup)
+
+    def load_commands(self):
+        """Load application commands from JSON config"""
+        try:
+            with open('commands.json', 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return {
+                "apps": {
+                    "notepad": ["notepad.exe"],
+                    "calculator": ["calc.exe"],
+                    "chrome": ["C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"]
+                },
+                "websites": {
+                    "google": "https://google.com",
+                    "youtube": "https://youtube.com",
+                    "github": "https://github.com"
+                }
+            }
+
+    def listen(self):
+        """Enhanced voice recognition with multiple API fallback"""
+        with sr.Microphone() as source:
+            try:
+                print("\nListening...")
+                # Adjust for ambient noise
+                self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
+                
+                # Get audio
+                audio = self.recognizer.listen(source, timeout=5, phrase_time_limit=10)
+                
+                # Try multiple speech recognition services
+                try:
+                    # Try Google Speech Recognition (works well with Indian accent)
+                    command = self.recognizer.recognize_google(audio, language="en-IN")
+                except:
+                    try:
+                        # Fallback to regular Google Speech Recognition
+                        command = self.recognizer.recognize_google(audio)
+                    except:
+                        try:
+                            # Another fallback option
+                            command = self.recognizer.recognize_sphinx(audio)
+                        except:
+                            return None
+
+                command = command.lower()
+                print(f"Recognized: {command}")
+                
+                if "stop" in command:
+                    self.audio_engine.stop()
+                    self.audio_engine = AudioEngine()  # Reinitialize audio engine
+                    return None
+                    
+                return command
+
+            except sr.UnknownValueError:
+                print("Could not understand audio")
+                return None
+            except sr.RequestError:
+                print("Network error. Please check your connection.")
+                return None
+            except Exception as e:
+                print(f"Listening error: {e}")
+                return None
+
+    def handle_command(self, command):
+        """Enhanced command handling"""
+        if not command:
+            return
+
+        if "jarvis" in command:
+            self.audio_engine.speak("How can I assist you?")
+            
+        elif "time" in command:
+            current_time = datetime.now().strftime("%I:%M %p")
+            self.audio_engine.speak(f"Current time is {current_time}")
+            
+        elif "open" in command:
+            if "website" in command or any(site in command for site in self.commands["websites"]):
+                self.open_website(command)
+            else:
+                self.open_application(command)
+                
+        elif "close" in command:
+            self.close_application(command)
+            
+        elif "search" in command:
+            query = command.replace("search", "").strip()
+            try:
+                url = f"https://www.google.com/search?q={query}"
+                webbrowser.get().open(url)
+                self.audio_engine.speak(f"Searching for {query}")
+            except Exception as e:
+                print(f"Search error: {e}")
+                self.audio_engine.speak("Sorry, I couldn't perform the search")
+            
+        elif "exit" in command or "quit" in command:
+            self.cleanup()
+            sys.exit(0)
+            
+        elif "write" in command or "compose" in command:
+            self.generate_creative_content(command)
+            
+        else:
+            self.get_ai_response(command)
+
+    def generate_creative_content(self, command):
+        """Generate creative content using AI"""
+        try:
+            prompt = f"Create a short and creative response for: {command}"
+            completion = client.chat.completions.create(
+                model="llama3-8b-8192",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.9,
+                max_tokens=256,
+                stream=True
+            )
+            response = "".join(chunk.choices[0].delta.content or "" for chunk in completion)
+            self.audio_engine.speak(response)
+        except Exception as e:
+            print(f"Creative generation error: {e}")
+            self.audio_engine.speak("Sorry, I couldn't generate creative content at the moment")
+
+    def open_website(self, command):
+        """Handle website opening commands"""
+        for site, url in self.commands["websites"].items():
+            if site in command:
+                try:
+                    webbrowser.get().open(url)
+                    self.audio_engine.speak(f"Opening {site}")
+                    return
+                except Exception as e:
+                    print(f"Error opening website: {e}")
+                    self.audio_engine.speak(f"Error opening {site}")
+                    return
+        self.audio_engine.speak("Website not found in my database")
+
+    def open_application(self, command):
+        """Enhanced application opening with error handling"""
+        app_name = command.replace("open", "").strip()
+        if app_name in self.commands["apps"]:
+            try:
+                process = subprocess.Popen(self.commands["apps"][app_name])
+                self.app_processes[app_name] = process
+                self.audio_engine.speak(f"Opening {app_name}")
+            except Exception as e:
+                print(f"Error opening {app_name}: {e}")
+                self.audio_engine.speak(f"Error opening {app_name}")
+        else:
+            self.audio_engine.speak("Application not found in my database")
+
+    def close_application(self, command):
+        """Enhanced application closing with error handling"""
+        app_name = command.replace("close", "").strip()
+        if app_name in self.app_processes:
+            try:
+                self.app_processes[app_name].terminate()
+                self.app_processes.pop(app_name)
+                self.audio_engine.speak(f"Closed {app_name}")
+            except Exception as e:
+                print(f"Error closing {app_name}: {e}")
+                self.audio_engine.speak(f"Error closing {app_name}")
+
+    def get_ai_response(self, command):
+        """Get AI response from Groq"""
+        try:
+            completion = client.chat.completions.create(
+                model="llama3-8b-8192",
+                messages=[{"role": "user", "content": command}],
+                temperature=0.7,
+                max_tokens=512,
+                stream=True
+            )
+            response = "".join(chunk.choices[0].delta.content or "" for chunk in completion)
+            self.audio_engine.speak(response)
+        except Exception as e:
+            print(f"AI Error: {e}")
+            self.audio_engine.speak("Sorry, I couldn't process that request")
+
+    def cleanup(self):
+        """Comprehensive cleanup of all resources"""
+        print("\nCleaning up resources...")
+        
+        # Stop audio engine
+        if hasattr(self, 'audio_engine'):
+            self.audio_engine.stop()
+        
+        # Close all applications
+        for app_name, process in list(self.app_processes.items()):
+            try:
+                process.terminate()
+                process.wait(timeout=2)
+                print(f"Closed {app_name}")
+            except Exception as e:
+                print(f"Error closing {app_name}: {e}")
+                try:
+                    process.kill()
+                except:
+                    pass
+        
+        # Clear processes dictionary
+        self.app_processes.clear()
+        
+        # Stop recognition
+        self.is_listening = False
+        print("Cleanup completed")
+
+    def run(self):
+        """Main loop with enhanced error handling"""
+        print("Starting voice assistant...")
+        self.audio_engine.speak("Voice assistant is ready")
+        
+        while self.is_listening:
+            try:
+                command = self.listen()
+                if command:
+                    self.handle_command(command)
+            except KeyboardInterrupt:
+                self.cleanup()
+                break
+            except Exception as e:
+                print(f"Runtime error: {e}")
+
+if __name__ == "__main__":
+    assistant = VoiceAssistant()
+    try:
+        assistant.run()
+    except Exception as e:
+        print(f"Critical error: {e}")
+        assistant.cleanup()
+        sys.exit(1)

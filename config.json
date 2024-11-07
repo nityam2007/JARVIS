@@ -1,0 +1,201 @@
+{
+    "assistant_settings": {
+        "name": [
+            "computer",
+            "jarvis"
+        ],
+        "wake_words": [
+            "hey computer",
+            "ok computer",
+            "computer",
+            "jarvis",
+            "hey jarvis",
+            "ok jarvis"
+        ],
+        "recognition_settings": {
+            "energy_threshold": 3000,
+            "dynamic_energy_threshold": true,
+            "pause_threshold": 1.0,
+            "phrase_threshold": 0.5,
+            "non_speaking_duration": 0.8,
+            "language": "en-IN",
+            "operation_timeout": 30,
+            "phrase_time_limit": 15,
+            "adjustment_duration": 1.0
+        },
+        "voice_settings": {
+            "volume": 1.0,
+            "rate": 175,
+            "voice_id": "en-IN",
+            "timeout_seconds": 30
+        }
+    },
+    "applications": {
+        "browsers": {
+            "chrome": "%PROGRAMFILES%\\Google\\Chrome\\Application\\chrome.exe",
+            "edge": "%PROGRAMFILES%\\Microsoft\\Edge\\Application\\msedge.exe",
+            "firefox": "%PROGRAMFILES%\\Mozilla Firefox\\firefox.exe"
+        },
+        "media": {
+            "spotify": "%USERPROFILE%\\AppData\\Roaming\\Spotify\\Spotify.exe",
+            "vlc": "%PROGRAMFILES%\\VideoLAN\\VLC\\vlc.exe",
+            "windows_media": "%SYSTEMROOT%\\System32\\wmplayer.exe"
+        },
+        "productivity": {
+            "notepad": "notepad.exe",
+            "word": "WINWORD.EXE",
+            "excel": "EXCEL.EXE",
+            "powerpoint": "POWERPNT.EXE",
+            "vscode": "code"
+        },
+        "system": {
+            "cmd": "cmd.exe",
+            "explorer": "explorer.exe",
+            "calculator": "calc.exe",
+            "task_manager": "taskmgr.exe",
+            "control_panel": "control.exe"
+        }
+    },
+    "urls": {
+        "youtube": "https://youtube.com",
+        "google": "https://google.com",
+        "gmail": "https://gmail.com",
+        "github": "https://github.com",
+        "netflix": "https://netflix.com",
+        "spotify_web": "https://open.spotify.com",
+        "amazon": "https://amazon.in",
+        "chatgpt": "https://chat.openai.com",
+        "maps": "https://maps.google.com",
+        "drive": "https://drive.google.com"
+    },
+    "spotify_settings": {
+        "default_volume": 50,
+        "quick_seek_seconds": 15,
+        "search_terms": [
+            "top hits",
+            "viral hits",
+            "discover weekly",
+            "release radar",
+            "mood booster",
+            "party mix",
+            "popular now",
+            "trending songs",
+            "your daily mix",
+            "liked songs",
+            "top 50 global",
+            "top 50 india"
+        ],
+        "playlists": {
+            "work": "Work Mode",
+            "relax": "Chill Vibes",
+            "party": "Party Mix",
+            "focus": "Deep Focus",
+            "workout": "Workout Beats"
+        },
+        "shortcuts": {
+            "play_pause": "space",
+            "next_track": "ctrl+right",
+            "previous_track": "ctrl+left",
+            "volume_up": "ctrl+up",
+            "volume_down": "ctrl+down",
+            "seek_forward": "ctrl+shift+right",
+            "seek_backward": "ctrl+shift+left",
+            "shuffle": "ctrl+s",
+            "repeat": "ctrl+r"
+        }
+    },
+    "responses": {
+        "greetings": [
+            "At your service, sir",
+            "How may I assist you?",
+            "Ready and listening",
+            "Yes, sir?",
+            "Standing by for your command",
+            "Online and ready",
+            "Good to see you, sir"
+        ],
+        "acknowledgments": [
+            "Right away, sir",
+            "Processing your request",
+            "Consider it done",
+            "Working on it",
+            "On it, sir",
+            "Processing that now",
+            "I'll take care of that"
+        ],
+        "errors": [
+            "I apologize, but I encountered an error",
+            "I'm having trouble with that request",
+            "Something went wrong. Please try again",
+            "I couldn't complete that task",
+            "There seems to be an issue",
+            "That didn't work as expected",
+            "Error encountered, shall I try again?"
+        ],
+        "goodbyes": [
+            "Goodbye, sir",
+            "Shutting down",
+            "Until next time",
+            "Have a great day",
+            "System going offline",
+            "Take care, sir",
+            "Goodbye for now"
+        ],
+        "mute": [
+            "Voice output muted",
+            "Muting myself",
+            "Going silent",
+            "Audio output disabled",
+            "Mute mode activated"
+        ],
+        "unmute": [
+            "Voice restored",
+            "I'm back online",
+            "Ready to speak again",
+            "Audio output enabled",
+            "Voice mode activated"
+        ],
+        "music": [
+            "Playing your music now",
+            "Starting the music",
+            "Here's some music for you",
+            "Loading your tracks",
+            "Getting the beats going"
+        ]
+    },
+    "hotkeys": {
+        "system": {
+            "close_window": "alt+f4",
+            "switch_window": "alt+tab",
+            "show_desktop": "win+d",
+            "lock_pc": "win+l",
+            "screenshot": "win+shift+s"
+        },
+        "spotify": {
+            "play_pause": "space",
+            "next_track": "ctrl+Right",
+            "previous_track": "ctrl+Left",
+            "volume_up": "ctrl+up",
+            "volume_down": "ctrl+down",
+            "seek_forward": "ctrl+shift+right",
+            "seek_backward": "ctrl+shift+left"
+        }
+    },
+    "ai_settings": {
+        "model": "llama3-8b-8192",
+        "temperature": 0.7,
+        "max_tokens": 2048,
+        "system_prompt": "You are Jarvis, an advanced AI assistant inspired by Iron Man's AI. Be professional, concise, and slightly witty. When writing text, be creative and engaging. Adapt your responses based on context and user preferences. Maintain a helpful and efficient demeanor while adding touches of personality to interactions."
+    },
+    "memory_settings": {
+        "max_history_length": 10,
+        "history_file": "conversation_history.json",
+        "auto_save_interval": 300
+    },
+    "system_commands": {
+        "shutdown": "shutdown /s /t 0",
+        "restart": "shutdown /r /t 0",
+        "sleep": "rundll32.exe powrprof.dll,SetSuspendState 0,1,0",
+        "hibernate": "shutdown /h"
+    }
+}
